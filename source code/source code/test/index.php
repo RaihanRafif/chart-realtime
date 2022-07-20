@@ -1,13 +1,20 @@
 <?php
+
+use function PHPSTORM_META\type;
+
 include("connection.php");
 $query = mysqli_query($db, "SELECT * FROM cpu_temperature ORDER BY id DESC");
-while ($row = mysqli_fetch_array($query)) {
+
+
+
+while ($row = mysqli_fetch_assoc($query)) {
 	$time = $row['time'];
 	$temperature = $row['temperature'];
+	$dataPoints = array();
 
-
-	// echo print_r($dataPoints);
+	array_push($dataPoints, array("y" => $temperature, "label" => $time));
 }
+
 ?>
 <html>
 
@@ -47,42 +54,18 @@ while ($row = mysqli_fetch_array($query)) {
 		};
 		xhttp.open("GET", "server.php", true);
 		xhttp.send();
-
-		var getData = document.getElementsByTagName("td")
-		var temperatureArray = []
-		var timeArray = []
-		if (getData.length != 0) {
-			for (let index = 0; index < getData.length; index++) {
-				if (index % 2 != 0) {
-					temperatureArray.push(parseFloat(document.getElementsByTagName("td").item(index).innerHTML))
-				}
-				if (index == 0 || index % 2 == 0) {
-					timeArray.push(document.getElementsByTagName("td").item(index).innerHTML)
-				}
-			}
-
-			var c = timeArray.map(time =>
-				temperatureArray.map(temperature =>
-					({
-						'y': time,
-						'label': temperature
-					})
-				)
-			)
-			console.log(dataPoints)
-			var chart = new CanvasJS.Chart("chartContainer", {
-				title: {
-					text: "Push-ups Over a Week"
-				},
-				axisY: {
-					title: "Number of Push-ups"
-				},
-				data: [{
-					type: "line",
-					dataPoints: c,
-				}]
-			});
-			chart.render();
-		}
 	}, 1000);
+	var chart = new CanvasJS.Chart("chartContainer", {
+		title: {
+			text: "Push-ups Over a Week"
+		},
+		axisY: {
+			title: "Number of Push-ups"
+		},
+		data: [{
+			type: "line",
+			dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
+		}]
+	});
+	chart.render();
 </script>
